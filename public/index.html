@@ -1,0 +1,89 @@
+<html>
+<body>
+	<h1>Home Page (/public/index.html</h1>
+	(fyi: file:./public/ == [url]/static)
+	
+	<h2>Page Links</h2>
+	<table border=1>
+		<thead>
+			<th><td><b>Link</b></td><td><b>Description</b></td></th>
+		</thead>
+		<tbody>
+			<tr>
+				<td><a href="/public/client.html">Log Cat</a></td>
+				<td>A simple Log cat lister... It's mostly (if not all) like the original nodejs logcat app</td>
+			</tr>
+			<tr>
+				<td><a href="/public/image_test.html">Image Test</a></td>
+				<td>A simple use of the Screenshot endpoint. Continiously polls the server for a new screen response time is around 0.8-2.0 Sec per image</td>
+			</tr>
+			<tr>
+				<td><a href="/public/event_list.html">Event List</a></td>
+				<td>Lists Events that are recieved by the phone and displays a readable version.. See /public/value_list.json for a listing of the values used/assumed</td>
+			</tr>
+		</tbody>
+	</table>
+	<h2>Enpoints</h2>
+	<table border=1>
+		<thead>
+			<th>
+				<td><b>Name</b></td>
+				<td><b>Type</b></td>
+				<td><b>Path\id</b></td>
+				<td><b>Description</b></td>
+			</th>
+		</thead>
+		<tbody>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+
+			<tr>
+				<td>Screen Shot</td>
+				<td>Http Get, png Image</td>
+				<td><a href="/android/screen.png">/android/screen.png</a></td>
+				<td>Captures the screen of the android device using adb to get "/dev/graphics/fb0" and mech-png to encode it as a png Image. Dimentions of the Screen are retreieved upon server startup & it assumes that fb0 is bgra8888 format and only grabs the first page of the buffer (many phones use double buffering). Average response time is around 0.8-2.0Sec</td>
+			</tr>
+			<tr>
+				<td>Root</td>
+				<td>Http Get</td>
+				<td><a href="/">/</a></td>
+				<td>Simply Retuns the contents of /public/index.html</td>
+			</tr>
+			<tr>
+				<td>Static/Public Files</td>
+				<td>Http Get</td>
+				<td>/static/*</td>
+				<td>Retuns the specified file under /public</td>
+			</tr>
+			<tr>
+				<td>device File -> Event Name Map</td>
+				<td>Http Get, JSON</td>
+				<td><a href="/android/eventdevlist">/android/eventdevlist</a></td>
+				<td>Gets device File -> Event Name Map that is obtained at the beginning of the "adb shell getevent" as a JSON Map</td>
+			</tr>
+			<tr>
+				<td>Process List</td>
+				<td>Http Get, JSON</td>
+				<td><a href="/android/ps">/android/ps</a></td>
+				<td>Gets the list of processes running on the device as JSON</td>
+			</tr>	
+			<tr>
+				<td>Event Capture</td>
+				<td>express.io Broadcast, JSON</td>
+				<td>EventCapture</td>
+				<td>Sends out each event as a JSON object where each numeric value has been converted to a JSON number (ie decimal).<br/> see value_list.json for eventName + ID -> Var Name Mappings</td>
+			</tr>
+			<tr>
+				<td>Logcat Log Line</td>
+				<td>express.io Broadcast, JSON</td>
+				<td>line</td>
+				<td>Sends out each line of log produced by logcat, as a JSON object: {'line':"Line Text", 'type':'One of: "error", "warning", "success", "info"'}</td>
+			</tr>		
+		</tbody>
+	</table>
+</body>
+</html>
