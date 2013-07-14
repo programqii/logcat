@@ -22,9 +22,6 @@ function convertEachToInt10(element, index, array) {array[index]= parseInt(eleme
 app.http().io();
 app.get('/', function(req, res) {res.sendfile(__dirname + '/public/index.html');});
 app.use('/static', express_io.static(__dirname + '/public'));
-app.get('/js/jquery-1.9.1.min.js', function(req, res) {res.sendfile(__dirname + '/public/js/jquery-1.9.1.min.js');});
-app.get('/js/bootstrap.min.js', function(req, res) {res.sendfile(__dirname + '/public/js/bootstrap.min.js');});
-app.get('/css/bootstrap.min.css', function(req, res) {res.sendfile(__dirname + '/public/css/bootstrap.min.css');});
 app.get('/android/eventdevlist', function(req, res) {res.send(globalEventInfo);});
 
 function diffMs(timer) {
