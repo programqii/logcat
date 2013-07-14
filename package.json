@@ -3,7 +3,8 @@
   "author": "Spirin Vladimir <spirin.vladimir@gmail.com>",
   "dependencies": {
     "express.io": "*",
-    "colors": "*"
+    "colors": "*",
+	"mech-png": "*"
   },
   "version": "0.0.3",
   "scripts": {

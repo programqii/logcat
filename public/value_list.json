@@ -1,0 +1,88 @@
+{
+	"sec_keypad":{
+		"139": "HW_Keypad_Settings",
+		"102": "HW_Keypad_Home",
+		"158": "HW_Keypad_Search",
+		"217": "HW_Keypad_Back",
+		"2": "HW_Keypad_1",
+		"3": "HW_Keypad_2",
+		"4": "HW_Keypad_3",
+		"5": "HW_Keypad_4",	
+		"6": "HW_Keypad_5",
+		"7": "HW_Keypad_6",
+		"8": "HW_Keypad_7",
+		"9": "HW_Keypad_8",
+		"10": "HW_Keypad_9",
+		"11": "HW_Keypad_0",
+
+		"16": "HW_Keypad_q",
+		"17": "HW_Keypad_w",
+		"18": "HW_Keypad_e",
+		"19": "HW_Keypad_r",
+		"20": "HW_Keypad_t",
+		"21": "HW_Keypad_y",
+		"22": "HW_Keypad_u",
+		"23": "HW_Keypad_i",
+		"24": "HW_Keypad_o",
+		"25": "HW_Keypad_p",
+
+		"30": "HW_Keypad_a",
+		"31": "HW_Keypad_s",
+		"32": "HW_Keypad_d",
+		"33": "HW_Keypad_f",
+		"34": "HW_Keypad_g",
+		"35": "HW_Keypad_h",
+		"36": "HW_Keypad_j",
+		"37": "HW_Keypad_k",
+		"38": "HW_Keypad_l",
+		"14": "HW_Keypad_backspace",
+		"42": "HW_Keypad_shift",
+		"44": "HW_Keypad_z",
+		"45": "HW_Keypad_x",
+		"46": "HW_Keypad_c",
+		"47": "HW_Keypad_v",
+		"48": "HW_Keypad_b",
+		"49": "HW_Keypad_n",
+		"50": "HW_Keypad_m",
+		"103": "HW_Keypad_up",
+		"28": "HW_Keypad_enter",
+
+		"56": "HW_Keypad_fn",
+		"155": "HW_Keypad_chat",
+		"150": "HW_Keypad_web",
+		"57": "HW_Keypad_space",
+		"51": "HW_Keypad_.",
+		"105": "HW_Keypad_left",
+		"108": "HW_Keypad_down",
+		"106": "HW_Keypad_right"
+	},
+	"magnetic_sensor":{},
+	"raw_magnetic_sensor":{},
+	"orientation_sensor":{},
+	"sec_key":{
+		"116": "Key_Power",
+		"115": "Key_Volume_Up",
+		"114": "Key_Volume_Down"
+	},
+	"proximity_sensor":{},
+	"light_sensor":{
+		"40": "light Value"
+	},
+	"accelerometer_sensor":{},
+	"sec_touchkey":{
+		"217": "Soft_Key_Search",
+		"158": "Soft_Key_Back",
+		"102": "Soft_Key_Home",
+		"139": "Soft_Key_Settings"
+	},
+	"sec_touchscreen":{
+		"48": "Finger Down?",
+		"50": "Area of finger/Pressure",
+		"53": "X",
+		"54": "Y",
+		"20": "Finger Down",
+		"57": "Point ID/Index (multi Touch)",
+		"2": "Finish Data Entry?"
+	}
+	
+}

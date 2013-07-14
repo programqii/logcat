@@ -1,0 +1,81 @@
+<html>
+	<head>
+		<title>adb logcat</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+		<script src="js/jquery-1.9.1.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script>
+			var eventDevList = {};
+			
+			$.ajax({
+				url:"/android/eventdevlist", 
+				dataType: "json",
+				success:function(data) {
+					eventDevList = data;
+				}
+			});
+			var cmd_list = {};
+			$.ajax({
+				url:"/static/cmd_list.json", 
+				dataType: "json",
+				success:function(data) {
+					cmd_list = data;
+				}
+			});			
+			var value_list = {};
+			$.getJSON("/static/value_list.json", function(data) {value_list = data;});		
+
+function hex2float(num) {
+    var sign = (num & 0x80000000) ? -1 : 1;
+    var exponent = ((num >> 23) & 0xff) - 127;
+    var mantissa = 1 + ((num & 0x7fffff) / 0x7fffff);
+    return sign * mantissa * Math.pow(2, exponent);
+}
+
+var op_type = {
+	"0": {"name": "Command", "formatValue": function(x){ return x;}},
+	"1": {"name": "Boolean", "formatValue": function(x){ return x ? "true" : "false";}},
+	//Floats are multiplied aganst a number to get an actual float
+	"2": {"name": "Float", "formatValue": function(x) {return  ((x & 0x80000000) ? -((x & ~0x80000000)  ^ ~0x80000000) -1: x);}},
+	"3": {"name": "Int", "formatValue": function(x) {return x;}}, //Usually small
+	"5": {"name": "Key Pad State", "formatValue": function(x) {return x ? "1 - Closed" : "0 - Open"}}
+};			
+			if (document.addEventListener) {
+				document.addEventListener('DOMContentLoaded', function() {
+					var socket = io.connect();
+					var table = document.createElement("tbody");
+					document.getElementsByTagName("table")[0].appendChild(table);
+					var firstChild = table.firstChild;
+					socket.on('EventCapture', function (x) {
+						if(eventDevList[x.file] == "light_sensor") return;
+						if(eventDevList[x.file] == "sec_touchscreen") return;
+						var eventName = eventDevList[x.file] ? eventDevList[x.file] : x.file;
+						var display = {
+							"file":eventName,
+							"cmd":op_type[x.cmd] && op_type[x.cmd].name ? op_type[x.cmd].name : x.cmd,
+							"id":value_list[eventName] && value_list[eventName][x.id] ? x.id + " :: " +value_list[eventName][x.id] : x.id,
+							"value": op_type[x.cmd] && op_type[x.cmd].formatValue ? op_type[x.cmd].formatValue(x.value) : x.value
+						};
+						
+						var tr = document.createElement("tr");
+						tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(display.file));
+						tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(display.cmd));
+						tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(display.id));
+						tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(display.value));
+						tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(x.raw));
+						
+						table.insertBefore(tr, firstChild);
+						firstChild = tr;
+					});
+				}, false);
+			}
+		</script>
+	</head>
+	<body><table class="table table-striped table-bordered table-hover">
+	<thead><tr><td>Event Name</td><td>Command</td><td>Id</td><td>Value</td><td>raw</td></tr></thead>
+	
+	</table></body>
+</html>
+
