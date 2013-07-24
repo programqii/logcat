@@ -1,5 +1,67 @@
-var adb_path = "C:\\adt-bundle-windows-x86_64\\sdk\\platform-tools\\adb";
-var perl_path = "C:\\cygwin\\bin\\perl";
+var fileSys = require('fs');
+console.log("process.platform = " + process.platform);
+function getJsonFile(filename) {
+	console.log('getJsonFile Loading: ' + filename);
+	data = fileSys.readFileSync(filename, 'utf8');
+	return JSON.parse(data);
+
+}
+var config = getJsonFile("./user_config/user_config.json");
+config.paths["."] = "/" + __dirname.replace(/\\/g, "/").replace(":","");
+function getPath(pathIn, systemType) {
+	if(!systemType) {
+		systemType = config.os_type;
+	}
+	var delm = "";
+	pathIn = pathIn.replace("/./","/");
+	pathIn = pathIn.replace(/^\.\//, config.paths["."] + "/");
+	var folders = pathIn.split("/");
+	if(folders.length > 1 && config.paths[folders[1]]) {
+		folders= config.paths[folders[1]].split("/").concat(folders.slice(2));
+	}
+	var popNum =0;
+	var result = [];
+	for(var i =folders.length-1; i>=0; i--) {
+		if(folders[i] =="..") {
+			popNum ++;
+			folders.pop();
+		} else if(popNum > 0) {
+			folders.pop();
+		} else {
+			result.push(folders.pop());
+		}
+	}
+	folders = result.reverse();
+	if(systemType == "windows") {
+		if(folders.length > 1 ){
+			return folders[1] + ":\\" + folders.slice(2).join("\\");
+		} else return "";
+	} else if(systemType == "cygwin_cygdrive") {
+		return "/cygdrive" + folders.join("/");
+	} else if(systemType == "cygwin_c") {
+		return folders.join("/");
+	} else if(systemType == "linux_like") {
+		return folders.join("/");
+	}
+	console.log("Unknown Path/SystemType: \"" + pathIn + "\" \"" + systemType+"\"");
+	return "";
+}
+function getParamString(str, systemType) {
+	if(!systemType) {
+		systemType = config.os_type;
+	}
+	if(systemType == "windows") {
+		return "\"" + str + "\"";
+	}
+	return "'" + str + "'";
+}
+var path = {
+	"adb" : getPath("/adt_sdk/platform-tools/adb"),
+	"python" : getPath("/python27/python"),
+	"monkeyrunner" : getPath("/adt_sdk/tools/monkeyrunner")
+};
+console.log(path);
+//var perl_path = "/cygwin/bin/perl";
 
 var child_process = require('child_process'),
 	express_io=require('express.io');
@@ -14,8 +76,8 @@ var util = require('util'),
 		'info': ['info']
 	},
 	mech_png = require('mech-png'),
-	event_capture = spawn(adb_path, ['shell', 'getevent']),
-	logcat = spawn(adb_path, ['logcat']);
+	event_capture = spawn(path.adb, ['shell', 'getevent']),
+	logcat = spawn(path.adb, ['logcat']);
 var globalEventInfo = {}; //for/from EventCapture
 
 function convertEachToInt10(element, index, array) {array[index]= parseInt(element, 10);}
@@ -28,21 +90,34 @@ function diffMs(timer) {
 	var diff = process.hrtime(timer);
 	return ((diff[0] * 1e9 + diff[1])*1e-9 ) + "s";}
 var dims = [100,100];
-	child_process.exec(adb_path + " shell dumpsys window", function (error, stdout, stderr) {
+	child_process.exec(path.adb + " shell dumpsys window", function (error, stdout, stderr) {
 		
 		dims = stdout.match(/DisplayWidth=([0-9]+) +DisplayHeight=([0-9]+)/).slice(1);
 		dims.forEach(convertEachToInt10);
 	});
-app.get('/android/screen.png', function(req, res) {
+
+app.get('/android/screen_monkey.png', function(req, res) {//6-8 Sec/Image
+		var timer = process.hrtime();
+		console.log("Running: " +path.monkeyrunner + " " + getParamString(getPath("./screenshot_monkey.py")));
+		child_process.exec(path.monkeyrunner + " " + getParamString(getPath("./screenshot_monkey.py")),
+		{encoding: 'binary', maxBuffer:1024*1024*2}, //2mb png is big
+		function (error, stdout, stderr) {
+			console.log("Monkey->PNG: " + diffMs(timer));timer = process.hrtime();
+			res.send(new Buffer(stdout, 'binary'));
+		});
+
+});
+
+app.get('/android/screen.png', function(req, res) {//1-2 Sec/Image
 	var timer = process.hrtime();
 /*
-	child_process.exec(adb_path + " shell dumpsys window", function (error, stdout, stderr) {
+	child_process.exec(path.adb + " shell dumpsys window", function (error, stdout, stderr) {
 		
 		var dims = stdout.match(/DisplayWidth=([0-9]+) +DisplayHeight=([0-9]+)/).slice(1);
 		dims.forEach(convertEachToInt10);
 */
 		//console.log("Exec dumpsys: " +diffMs(timer));timer = process.hrtime();
-		child_process.exec(adb_path + " shell \"cat /dev/graphics/fb0\"",
+		child_process.exec(path.adb + " shell \"cat /dev/graphics/fb0\"",
 		{encoding: 'binary', maxBuffer:dims[0]*dims[1]*4*3},
 		function (error, stdout, stderr) {
 			stdout = stdout.replace(/\r\r\n/g, "\n");
@@ -69,7 +144,7 @@ app.get('/android/screen.png', function(req, res) {
 });
 
 app.get('/android/ps', function(req, res) {
-	var ps = child_process.exec(adb_path + " shell ps -t -x -P -p", function (error, stdout, stderr) {
+	var ps = child_process.exec(path.adb + " shell ps -t -x -P -p", function (error, stdout, stderr) {
 		var resp = {};
 		resp.error = stderr;
 		resp.ps = [];
@@ -198,17 +273,25 @@ logcat.stderr.on('data', function(data){parseLogcat(data, 'error');});
 
 logcat.on('exit', function (code) {
 	console.log("Reconnecting Logcat");
-	logcat = spawn(adb_path, ['logcat']);
+	//logcat = spawn(path.adb, ['logcat']);
 });
 
+logcat.on('error', function (code) {
+	console.log(code);
+});
 
 event_capture.stdout.on('data', function(data){parseEventCapture(data);});
 
 event_capture.stderr.on('data', function(data){parseEventCapture(data, 'error');});
 
+event_capture.on('error', function (code) {
+console.log(code);
+});
 event_capture.on('exit', function (code) {
 	console.log("Reconnecting Event Capture");
-	event_capture = spawn(adb_path, ['shell', 'getevent']);
+	//event_capture = spawn(path.adb, ['shell', 'getevent']);
 });
+
 module.exports = app;
 app.listen(8080);
+console.log("Ready!");
