@@ -41,3 +41,5 @@
 
 Modifications by: ProgramQii
 
+Licence: [BSD-2] (http://opensource.org/licenses/BSD-2-Clause)
+
